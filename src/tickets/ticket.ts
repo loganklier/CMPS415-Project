@@ -1,4 +1,4 @@
-import { promises, readFileSync, writeFileSync } from "fs";
+import * as fs from "fs";
 import path from "path";
 
 export interface Ticket {
@@ -20,7 +20,7 @@ export interface Ticket {
 const filePath = "../../tickets-db.json";
 
 export function getTickets(): Ticket[] {
-  const rawData = readFileSync(path.resolve(__dirname, filePath));
+  const rawData = fs.readFileSync(path.resolve(__dirname, filePath));
   const jsonData = JSON.parse(rawData.toString());
   return jsonData.map((data: any) => ({
     id: data.id,
@@ -60,10 +60,10 @@ export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
   tickets.push(ticket);
   const updatedContent = JSON.stringify(tickets, null, 2);
 
-  const fileHandle = await promises.open("../tickets-db.json", "w");
+  console.log(updatedContent);
 
   try {
-    fileHandle.writeFile(updatedContent);
+    fs.writeFileSync(path.resolve(__dirname, filePath), updatedContent);
     return Promise.resolve({
       hasErrors: false,
       message: JSON.stringify(ticket, null, 2),
