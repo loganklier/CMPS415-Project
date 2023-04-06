@@ -10,5 +10,10 @@
   },
   "scripts": {
     "start": "ts-node-dev src/server.ts"
-  }
+  },
+  "name": "logan_klier_cmps_415_project",
+  "version": "1.0.0",
+  "description": "Logan Klier's cmps 415 project",
+  "repository": "https://github.com/loganklier/CMPS415-Project",
+  "author": "Logan Klier"
 }
