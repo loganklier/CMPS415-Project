@@ -1,4 +1,5 @@
-import * as fs from "fs";
+import { readFileSync } from "fs";
+import fs from "fs/promises";
 
 export interface Ticket {
   id: number;
@@ -16,10 +17,10 @@ export interface Ticket {
   tags: string[];
 }
 
-const filePath = "./tickets.json";
+const filePath = "src/tickets/tickets.json";
 
 export function getTickets(): Ticket[] {
-  const rawData = fs.readFileSync(filePath);
+  const rawData = readFileSync(filePath);
   const jsonData = JSON.parse(rawData.toString());
   return jsonData.map((data: any) => ({
     id: data.id,
@@ -43,31 +44,32 @@ export type PostResponse = {
   message: string;
 };
 
-export function writeTicket(ticket: Ticket): Promise<PostResponse> {
+export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
   const tickets = getTickets();
-  const nextTicketId = getMaxId(tickets);
 
+  const nextTicketId = getNextId(tickets);
   ticket.id = nextTicketId;
 
-  const data = JSON.stringify(ticket, null, 2);
+  if (!ticket.type) {
+    return Promise.resolve({
+      hasErrors: true,
+      message: "Ticket type is required",
+    });
+  }
 
-  return new Promise((resolve, reject) => {
-    if (!ticket.type) {
-      reject({ hasErrors: true, message: "Ticket type is required" });
-    } else {
-      fs.appendFile(filePath, "," + data, (err) => {
-        if (err) {
-          reject({ hasErrors: true, message: err.message });
-        } else {
-          resolve({ hasErrors: false, message: "Ticket added successfully" });
-        }
-      });
-    }
+  tickets.push(ticket);
+  const updatedContent = JSON.stringify(tickets, null, 2);
+
+  fs.writeFile(filePath, updatedContent);
+
+  return Promise.resolve({
+    hasErrors: false,
+    message: "Ticket added successfully",
   });
 }
 
-function getMaxId(tickets: Ticket[]): number {
+function getNextId(tickets: Ticket[]): number {
   return tickets.reduce((maxId, ticket) => {
-    return Math.max(maxId, ticket.id);
+    return Math.max(maxId, ticket.id) + 1;
   }, 1);
 }

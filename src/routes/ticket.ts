@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get("/rest/list", (req, res) => {
   const tickets = getTickets();
+
   return res.status(200).send(JSON.stringify(tickets, null, 2));
 });
 
