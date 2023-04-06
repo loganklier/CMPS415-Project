@@ -1,5 +1,6 @@
 import { readFileSync } from "fs";
 import fs from "fs/promises";
+import path from "path";
 
 export interface Ticket {
   id: number;
@@ -17,10 +18,10 @@ export interface Ticket {
   tags: string[];
 }
 
-const filePath = "src/tickets/tickets.json";
+const filePath = "./tickets.json";
 
 export function getTickets(): Ticket[] {
-  const rawData = readFileSync(filePath);
+  const rawData = readFileSync(path.resolve(__dirname, filePath));
   const jsonData = JSON.parse(rawData.toString());
   return jsonData.map((data: any) => ({
     id: data.id,
