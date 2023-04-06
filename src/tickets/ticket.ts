@@ -65,7 +65,7 @@ export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
 
   return Promise.resolve({
     hasErrors: false,
-    message: "Ticket added successfully",
+    message: JSON.stringify(ticket, null, 2),
   });
 }
 
