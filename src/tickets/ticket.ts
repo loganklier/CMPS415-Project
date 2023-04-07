@@ -40,8 +40,8 @@ export function getTickets(): Ticket[] {
 }
 
 export type PostResponse = {
-  hasErrors: boolean;
-  message: string;
+  validationResult?: ValidationResult;
+  data: string;
 };
 
 export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
@@ -49,30 +49,34 @@ export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
 
   const nextTicketId = getNextId(tickets);
   ticket.id = nextTicketId;
+  ticket.created_at = new Date().toISOString();
+  ticket.updated_at = new Date().toISOString();
 
-  if (!ticket.type) {
+  const validationResult = validateTicket(ticket);
+
+  if (validationResult.hasErrors) {
     return Promise.resolve({
-      hasErrors: true,
-      message: "Ticket type is required",
+      data: "",
+      validationResult: validationResult,
     });
   }
 
   tickets.push(ticket);
   const updatedContent = JSON.stringify(tickets, null, 2);
 
-  console.log(updatedContent);
-
   try {
     fs.writeFileSync(path.resolve(__dirname, filePath), updatedContent);
     return Promise.resolve({
-      hasErrors: false,
-      message: JSON.stringify(ticket, null, 2),
+      data: JSON.stringify(ticket, null, 2),
     });
   } catch (err) {
     console.log(err);
     return Promise.resolve({
-      hasErrors: true,
-      message: "Failed to write ticket to file",
+      data: "",
+      validationResult: {
+        hasErrors: true,
+        errorMessages: ["Failed to write ticket to file"],
+      },
     });
   }
 }
@@ -81,4 +85,35 @@ function getNextId(tickets: Ticket[]): number {
   return tickets.reduce((maxId, ticket) => {
     return Math.max(maxId, ticket.id) + 1;
   }, 1);
+}
+
+type ValidationResult = {
+  hasErrors: boolean;
+  errorMessages: string[];
+};
+
+function validateTicket(ticket: Ticket): ValidationResult {
+  const requiredProperties: (keyof Ticket)[] = [
+    "type",
+    "subject",
+    "description",
+    "priority",
+    "status",
+    "recipient",
+    "submitter",
+    "assignee_id",
+  ];
+
+  const errorMessages: string[] = requiredProperties
+    .filter((property) => !ticket[property])
+    .map(getRequiredText);
+
+  return {
+    hasErrors: errorMessages.length > 0,
+    errorMessages,
+  };
+}
+
+function getRequiredText(property: string) {
+  return `${property} is required`;
 }

@@ -12,11 +12,13 @@ router.get("/rest/list", (req, res) => {
 router.post("/rest/ticket", async (req, res) => {
   const response = await writeTicket(req.body);
 
-  if (response.hasErrors) {
-    return res.status(400).send(response.message);
+  if (response.validationResult?.hasErrors) {
+    return res
+      .status(400)
+      .send(JSON.stringify(response.validationResult.errorMessages, null, 2));
   }
 
-  return res.status(201).send(response.message);
+  return res.status(201).send(response.data);
 });
 
 router.get("/rest/ticket/:id", (req, res) => {
@@ -29,4 +31,4 @@ router.get("/rest/ticket/:id", (req, res) => {
     : res.status(404).send(`Ticket with id ${req.params.id} not found.`);
 });
 
-export { router as TicketRouter };
+export { router as TicketsController };

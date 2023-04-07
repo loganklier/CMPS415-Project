@@ -168,6 +168,7 @@
     ]
   },
   {
+    "id": 9,
     "created_at": "2023-04-06T22:55:29Z",
     "updated_at": "2023-04-6T22:56:29Z",
     "type": "Big Ticket",
@@ -185,7 +186,48 @@
     "tags": [
       "school",
       "network"
+    ]
+  },
+  {
+    "id": 10,
+    "created_at": "2023-04-06T22:55:29Z",
+    "updated_at": "2023-04-6T22:56:29Z",
+    "type": "In Class Demonstration",
+    "subject": "Please Work",
+    "description": "This should work again",
+    "priority": "high",
+    "status": "open",
+    "recipient": "support_example@selu.edu",
+    "submitter": "Michael_bolton@selu.edu",
+    "assignee_id": 235323,
+    "follower_ids": [
+      235323,
+      234
     ],
-    "id": 9
+    "tags": [
+      "school",
+      "network"
+    ]
+  },
+  {
+    "type": "Valid Ticket",
+    "subject": "Valid Ticket Test",
+    "description": "This should work again",
+    "priority": "high",
+    "status": "open",
+    "recipient": "support_example@selu.edu",
+    "submitter": "Michael_bolton@selu.edu",
+    "assignee_id": 235323,
+    "follower_ids": [
+      235323,
+      234
+    ],
+    "tags": [
+      "school",
+      "network"
+    ],
+    "id": 11,
+    "created_at": "2023-04-07T19:37:13.738Z",
+    "updated_at": "2023-04-07T19:37:13.738Z"
   }
 ]
