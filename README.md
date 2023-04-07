@@ -1,6 +1,6 @@
 # CMPS415-Project
 
-###Phase One:###
+##Phase One:
 
 CMPS 415  -  Enterprise Systems
 Programming Project
