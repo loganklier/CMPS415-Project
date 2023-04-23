@@ -1,5 +1,3 @@
-import * as fs from "fs";
-import path from "path";
 import { MongoClient, ObjectId } from "mongodb";
 export interface Ticket {
   _id: ObjectId;
