@@ -1,7 +1,8 @@
 import * as fs from "fs";
 import path from "path";
-
+import { MongoClient, ObjectId } from "mongodb";
 export interface Ticket {
+  _id: ObjectId;
   id: number;
   created_at: string;
   updated_at: string;
@@ -17,38 +18,65 @@ export interface Ticket {
   tags: string[];
 }
 
-const filePath = "../../tickets-db.json";
+const uri =
+  "mongodb+srv://loganklier:BpKepJmxn7qpwcI0@cmps415-project.2s3p4k5.mongodb.net/?retryWrites=true&w=majority";
 
-export function getTickets(): Ticket[] {
-  const rawData = fs.readFileSync(path.resolve(__dirname, filePath));
-  const jsonData = JSON.parse(rawData.toString());
-  return jsonData.map((data: any) => ({
-    id: data.id,
-    created_at: data.created_at,
-    updated_at: data.updated_at,
-    type: data.type,
-    subject: data.subject,
-    description: data.description,
-    priority: data.priority,
-    status: data.status,
-    recipient: data.recipient,
-    submitter: data.submitter,
-    assignee_id: data.assignee_id,
-    follower_ids: data.follower_ids,
-    tags: data.tags,
-  }));
+export async function getTickets(): Promise<Ticket[]> {
+  const client = new MongoClient(uri);
+  await client.connect();
+
+  try {
+    const db = client.db("CMPS415-Project");
+    const ticketsCollection = db.collection("Tickets");
+
+    const cursor = ticketsCollection.find();
+    const jsonData = await cursor.toArray();
+
+    return jsonData.map((data: any) => ({
+      _id: data._id,
+      id: data.id,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      type: data.type,
+      subject: data.subject,
+      description: data.description,
+      priority: data.priority,
+      status: data.status,
+      recipient: data.recipient,
+      submitter: data.submitter,
+      assignee_id: data.assignee_id,
+      follower_ids: data.follower_ids,
+      tags: data.tags,
+    }));
+  } finally {
+    await client.close();
+  }
 }
 
-export type PostResponse = {
+export async function getTicketById(id: number): Promise<Ticket> {
+  const client = new MongoClient(uri);
+  await client.connect();
+
+  try {
+    const db = client.db("CMPS415-Project");
+    const ticketsCollection = db.collection("Tickets");
+
+    const ticket = (await ticketsCollection.findOne({ id: id })) as Ticket;
+
+    return ticket;
+  } finally {
+    await client.close();
+  }
+}
+
+export type CreateUpdateResponse = {
   validationResult?: ValidationResult;
   data: string;
 };
 
-export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
-  const tickets = getTickets();
-
-  const nextTicketId = getNextId(tickets);
-  ticket.id = nextTicketId;
+export async function createTicket(
+  ticket: Ticket
+): Promise<CreateUpdateResponse> {
   ticket.created_at = new Date().toISOString();
   ticket.updated_at = new Date().toISOString();
 
@@ -61,30 +89,124 @@ export async function writeTicket(ticket: Ticket): Promise<PostResponse> {
     });
   }
 
-  tickets.push(ticket);
-  const updatedContent = JSON.stringify(tickets, null, 2);
+  const client = new MongoClient(uri);
+  await client.connect();
 
   try {
-    fs.writeFileSync(path.resolve(__dirname, filePath), updatedContent);
-    return Promise.resolve({
-      data: JSON.stringify(ticket, null, 2),
-    });
-  } catch (err) {
-    console.log(err);
-    return Promise.resolve({
-      data: "",
-      validationResult: {
-        hasErrors: true,
-        errorMessages: ["Failed to write ticket to file"],
-      },
-    });
+    const db = client.db("CMPS415-Project");
+    const ticketsCollection = db.collection("Tickets");
+
+    const result = await ticketsCollection.insertOne(ticket);
+
+    if (!result.acknowledged) {
+      return {
+        data: "",
+        validationResult: {
+          hasErrors: true,
+          errorMessages: ["Database Error"],
+        },
+      };
+    }
+
+    const insertedTicket = (await ticketsCollection.findOne({
+      _id: result.insertedId,
+    })) as Ticket;
+
+    return {
+      data: JSON.stringify(insertedTicket, null, 2),
+      validationResult: { hasErrors: false, errorMessages: [] },
+    };
+  } finally {
+    await client.close();
   }
 }
 
-function getNextId(tickets: Ticket[]): number {
-  return tickets.reduce((maxId, ticket) => {
-    return Math.max(maxId, ticket.id) + 1;
-  }, 1);
+export async function updateTicket(
+  ticket: Ticket,
+  id: number
+): Promise<CreateUpdateResponse> {
+  const validationResult = validateTicket(ticket);
+
+  if (validationResult.hasErrors) {
+    return Promise.resolve({
+      data: "",
+      validationResult: validationResult,
+    });
+  }
+
+  const client = new MongoClient(uri);
+  await client.connect();
+
+  try {
+    const db = client.db("CMPS415-Project");
+    const ticketsCollection = db.collection("Tickets");
+
+    const existingTicket = await ticketsCollection.findOne({ id: id });
+
+    if (!existingTicket) {
+      return {
+        data: "",
+        validationResult: {
+          hasErrors: true,
+          errorMessages: ["Ticket not found"],
+        },
+      };
+    }
+
+    ticket.updated_at = new Date().toISOString();
+
+    const result = await ticketsCollection.updateOne(
+      { id: id },
+      { $set: ticket }
+    );
+
+    if (!result.acknowledged) {
+      return {
+        data: "",
+        validationResult: {
+          hasErrors: true,
+          errorMessages: ["Database Error"],
+        },
+      };
+    }
+
+    const updatedTicket = (await ticketsCollection.findOne({
+      id: id,
+    })) as Ticket;
+
+    return {
+      data: JSON.stringify(updatedTicket, null, 2),
+      validationResult: { hasErrors: false, errorMessages: [] },
+    };
+  } finally {
+    await client.close();
+  }
+}
+
+export async function deleteTicket(id: number): Promise<string> {
+  const client = new MongoClient(uri);
+  await client.connect();
+
+  try {
+    const db = client.db("CMPS415-Project");
+    const ticketsCollection = db.collection("Tickets");
+
+    const existingTicket = await ticketsCollection.findOne({ id: id });
+
+    if (!existingTicket) {
+      return `Ticket with id ${id} not found.`;
+    }
+
+    const result = await ticketsCollection.deleteOne({ id: id });
+
+    if (!result.acknowledged || result.deletedCount !== 1) {
+      return `Database Error`;
+    }
+
+    return `Ticket with id ${id} deleted.`;
+  } finally {
+    await client.close();
+  }
 }
 
 type ValidationResult = {
