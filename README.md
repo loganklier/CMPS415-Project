@@ -66,3 +66,35 @@ Sample JSON ticket:
 "tags": ["enterprise", "printers"],
 }
 
+
+## Phase Two:
+
+CMPS 415  -  Enterprise Systems
+Programming Project
+
+Phase II: UD	 	 				                                                                    Due:4/21/23
+To be completed by April 21, 2023
+
+Overview
+The project for CMPS 415 will be the development of a Node.js web app which provides CRUD operations for a help desk ticketing system. This project will be split into three phases. Each phase must be developed and submitted separately for each phase. One submission of a final project is not allowed. Students are required to produce their own individual solutions; this is not a team project.
+
+
+Phase II – Summary
+This purpose of this phase is to extend the services created in Phase I. The extension will require the addition of a database to store the tickets. Two additional endpoints will need to be developed to update and delete tickets.
+
+You should use a database solution provided by Render.com. You may consider the following: https://devcenter.heroku.com/articles/mean-apps-restful-api#provision-a-mongodb-database
+
+Summary of Deliverables
+Node Web Service using Node that offers 5 endpoints.
+• DELETE - /rest/ticket/id = ”Deletes a ticket record by ID”
+• PUT - /rest/ticket/id = ”Updates exsisting ticket record based on ID”
+
+You must consider necessary input/output and error handling. There is no strict requirement for these.
+
+A report must be uploaded on Moodle containing a cover page, description of your work with any explanations that you consider important, a demonstration (with screenshots) of the required parts, and appendices containing your code. You must include relevant links for testing your code.
+
+Rubric
+Your score will be out of 100 points. The grade will be based upon the percentage of the project being completed.
+
+• 30 percent for each endpoint implemented
+• 40 percent for integrating and using a database
