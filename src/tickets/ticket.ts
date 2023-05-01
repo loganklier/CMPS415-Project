@@ -1,7 +1,7 @@
 import { MongoClient, ObjectId } from "mongodb";
 export interface Ticket {
-  _id: ObjectId;
-  id: number;
+  _id?: ObjectId | string;
+  id?: number;
   created_at: string;
   updated_at: string;
   type: string;
@@ -14,6 +14,10 @@ export interface Ticket {
   assignee_id: number;
   follower_ids: number[];
   tags: string[];
+}
+
+export interface TicketWrapper {
+  ticket: Ticket;
 }
 
 const uri =
@@ -94,7 +98,7 @@ export async function createTicket(
     const db = client.db("CMPS415-Project");
     const ticketsCollection = db.collection("Tickets");
 
-    const result = await ticketsCollection.insertOne(ticket);
+    const result = await ticketsCollection.insertOne(ticket as any);
 
     if (!result.acknowledged) {
       return {
