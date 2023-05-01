@@ -99,7 +99,7 @@ Your score will be out of 100 points. The grade will be based upon the percentag
 • 30 percent for each endpoint implemented
 • 40 percent for integrating and using a database
 
-##Phase Three
+## Phase Three
 
  CMPS 415  -  Enterprise Systems
 Programming Project
